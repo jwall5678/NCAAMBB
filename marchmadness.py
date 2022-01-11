@@ -62,6 +62,20 @@ for team in gen_stats['Team'].values.tolist():
         teams.append(team)
 
 
-
+def get_gen_missing(browser, season=None):
+    url = 'https://kenpom.com/index.php'
+    if season and int(season) < 2002:
+        raise ValueError("season cannot be less than 2002")
+    url += '?y={}'.format(season)
+    browser.open(url)
+    page = browser.get_current_page()
+    table = page.find_all('table')[0]
+    ratings_df = pd.read_html(str(table))
+    # Dataframe tidying.
+    ratings_df = ratings_df[0]
+    ratings_df.columns = ratings_df.columns.map(lambda x: x[1])
+    return ratings_df
+    
+gen_test = get_gen_missing(browser, '2016')
 
 
