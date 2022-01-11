@@ -78,4 +78,14 @@ def get_gen_missing(browser, season=None):
     
 gen_test = get_gen_missing(browser, '2016')
 
+import string
+gen_test.dropna(inplace = True)
+def strip_seed(name):
+    if name[-1] in string.digits:
+        return name.rstrip(string.digits)[:-1]
+    else: return name
+gen_test['Team'] = gen_test['Team'].apply(strip_seed)
+gen_test.drop(gen_test.loc[gen_test['Team'] == 'Team'], inplace = True)
+gen_test.loc[gen_test['Team'] == 'Team']
+gen_test = gen_test[gen_test.Team != 'Team']
 
