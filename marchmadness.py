@@ -8,6 +8,7 @@ import csv
 from kenpompy.utils import login
 import kenpompy.summary as kp
 import kenpompy.misc
+import string
 
 # Returns an authenticated browser that can then be used to scrape pages that require authorization.
 browser = login("jwall5678@outlook.com", "NCAAProject1")
@@ -18,7 +19,7 @@ data_dict = {}
 
 # for loop to read in various kenpom statistics (tables) and put them together in a list for each year
 for year in years:
-    gen_stats = kenpompy.misc.get_pomeroy_ratings(browser, season = year)
+    gen_stats = get_gen_missing(browser, season = year)
     eff_stats = kp.get_efficiency(browser, season = year)
     four_factors = kp.get_fourfactors(browser, season = year)
     roster_stats = kp.get_height(browser, season = year)
@@ -40,6 +41,7 @@ mm_17 = mm_data.loc[mm_data["Year"] == 2017]
 mm_18 = mm_data.loc[mm_data["Year"] == 2018]
 mm_19 = mm_data.loc[mm_data["Year"] == 2019]
 
+#
 final_df = pd.DataFrame()
 for year in data_dict.keys():
     temp_df = data_dict[year][0]
@@ -63,6 +65,21 @@ for team in gen_stats['Team'].values.tolist():
 
 
 def get_gen_missing(browser, season=None):
+    '''
+
+    Parameters
+    ----------
+    browser : a function
+        contains kenmpom username and password and allows us to login
+    season : an int 
+        the season for which we want the kenpom dataframe
+
+    Returns
+    -------
+    ratings_df : a dataframe
+        a dataframe of the general kenpom statistics for the year
+    '''
+    
     url = 'https://kenpom.com/index.php'
     if season and int(season) < 2002:
         raise ValueError("season cannot be less than 2002")
@@ -74,9 +91,11 @@ def get_gen_missing(browser, season=None):
     # Dataframe tidying.
     ratings_df = ratings_df[0]
     ratings_df.columns = ratings_df.columns.map(lambda x: x[1])
-    return ratings_df
+    ratings_df.dropna(inplace = True)
+    ratings_df['Team'] = ratings_df['Team'].apply(strip_seed)
+    ratings_df = ratings_df[ratings_df.Team != 'Team']
     
-gen_test = get_gen_missing(browser, '2016')
+    return ratings_df
 
 import string
 gen_test.dropna(inplace = True)
